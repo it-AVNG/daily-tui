@@ -9,14 +9,30 @@ class TimeDisplay(Digits):
 
     start_time = reactive(monotonic)
     time = reactive(0.0)
+    total = reactive(0.0)
 
     def update_time(self) -> None:
         """method to update time to the current time"""
-        self.time = monotonic() - self.start_time
+        self.time = self.total + (monotonic() - self.start_time)
 
     def on_mount(self) -> None:
         """event handler call when widget is added to the class"""
-        self.set_interval(1 / 60, self.update_time)
+        self.update_timer = self.set_interval(1 / 60, self.update_time,pause= True)
+
+    def start(self) -> None:
+        """method to start the time"""
+        self.start_time = monotonic()
+        self.update_timer.resume()
+
+    def stop(self) -> None:
+        """method to stop the time updating"""
+        self.update_timer.pause()
+        self.total += monotonic() - self.start_time
+        self.time = self.total
+
+    def reset(self) -> None:
+        self.total = 0
+        self.time = 0
 
     def watch_time(self, time:float)-> None:
         minutes, seconds = divmod(time, 60)
@@ -30,10 +46,16 @@ class StopWatch(HorizontalGroup):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Even handler for button pressed"""
-        if event.button.id == "start":
+        button_id = event.button.id
+        time_display = self.query_one(TimeDisplay)
+        if button_id == "start":
+            time_display.start()
             self.add_class("started")
         elif event.button.id == "stop":
+            time_display.stop()
             self.remove_class("started")
+        elif button_id == "reset":
+            time_display.reset()
         return
 
     def compose(self) -> ComposeResult:
