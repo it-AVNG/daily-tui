@@ -5,11 +5,21 @@ from textual.containers import HorizontalGroup, VerticalScroll
 
 class TimeDisplay(Digits):
     """AWidget to display the time"""
+
     pass
 
 
 class StopWatch(HorizontalGroup):
     """A stop watch widget"""
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Even handler for button pressed"""
+        if event.button.id == "start":
+            self.add_class("started")
+        elif event.button.id == "stop":
+            self.remove_class("started")
+        return
+
     def compose(self) -> ComposeResult:
         """Create a child widget for stop watch"""
         yield Button("Start", id="start", variant="success")
@@ -19,14 +29,14 @@ class StopWatch(HorizontalGroup):
         yield TimeDisplay("00:00:00:00")
 
 
-
 class StopWatchApp(App):
     """Textual app for a stop watch"""
-    
+
+    CSS_PATH = "stopwatch03.tcss"
     BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
 
     def compose(self) -> ComposeResult:
-        """"create child widget for the app"""
+        """ "create child widget for the app"""
         yield Header()
         yield Footer()
         yield VerticalScroll(StopWatch(), StopWatch(), StopWatch())
@@ -34,7 +44,10 @@ class StopWatchApp(App):
     def action_toggle_dark(self) -> None:
         """Action to switch to dark mode"""
 
-        self.theme = ( "textual-dark" if self.theme == "textual-light" else "textual-light")
+        self.theme = (
+            "textual-dark" if self.theme == "textual-light" else "textual-light"
+        )
+
 
 if __name__ == "__main__":
     app = StopWatchApp()
