@@ -4,6 +4,7 @@ from textual.containers import HorizontalGroup, VerticalScroll
 from textual.reactive import reactive
 from time import monotonic
 
+
 class TimeDisplay(Digits):
     """AWidget to display the time"""
 
@@ -17,7 +18,7 @@ class TimeDisplay(Digits):
 
     def on_mount(self) -> None:
         """event handler call when widget is added to the class"""
-        self.update_timer = self.set_interval(1 / 60, self.update_time,pause= True)
+        self.update_timer = self.set_interval(1 / 60, self.update_time, pause=True)
 
     def start(self) -> None:
         """method to start the time"""
@@ -34,14 +35,13 @@ class TimeDisplay(Digits):
         self.total = 0
         self.time = 0
 
-    def watch_time(self, time:float)-> None:
+    def watch_time(self, time: float) -> None:
         minutes, seconds = divmod(time, 60)
         hours, minutes = divmod(minutes, 60)
         self.update(f"{hours:02,.0f}:{minutes:02.0f}:{seconds:05.2f}")
 
 
-
-class StopWatch(HorizontalGroup):
+class Stopwatch(HorizontalGroup):
     """A stop watch widget"""
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -71,13 +71,17 @@ class StopWatchApp(App):
     """Textual app for a stop watch"""
 
     CSS_PATH = "stopwatch03.tcss"
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
+    BINDINGS = [
+        ("d", "toggle_dark", "Toggle dark mode"),
+        ("a", "add_stopwatch", "Add"),
+        ("r", "remove_stopwatch", "Remove"),
+    ]
 
     def compose(self) -> ComposeResult:
         """ "create child widget for the app"""
         yield Header()
         yield Footer()
-        yield VerticalScroll(StopWatch(), StopWatch(), StopWatch())
+        yield VerticalScroll(Stopwatch(), Stopwatch(), Stopwatch(), id="timers")
 
     def action_toggle_dark(self) -> None:
         """Action to switch to dark mode"""
@@ -85,6 +89,21 @@ class StopWatchApp(App):
         self.theme = (
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
+
+    def action_add_stopwatch(self) ->None:
+        """An action to add Timer"""
+
+        new_stopwatch =Stopwatch()
+        self.query_one("#timers").mount(new_stopwatch)
+        new_stopwatch.scroll_visible()
+
+    def action_remove_stopwatch(self):
+        timers = self.query("Stopwatch")
+        if timers:
+            timers.last().remove()
+
+    
+
 
 
 if __name__ == "__main__":
