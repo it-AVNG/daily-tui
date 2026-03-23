@@ -1,5 +1,4 @@
-from __future__ import annotations
-from sqlmodel import Field, SQLModel, create_engine, Relationship
+from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 from enum import Enum
 
@@ -18,10 +17,10 @@ class Warnings(Enum):
 
 
 class TaskInterlink(SQLModel, table=True):
-    root_task_id: int | None = Field(
+    parent_task_id: int | None = Field(
         default=None, foreign_key="tasks.id", primary_key=True
     )
-    follow_task_id: int | None = Field(
+    child_task_id: int | None = Field(
         default=None, foreign_key="tasks.id", primary_key=True
     )
 
@@ -35,11 +34,18 @@ class Tasks(SQLModel, table=True):
     warning: Warnings
     status: Status
 
-    root_task: list["Tasks"] = Relationship(
-        back_populates="follow_by", link_model=TaskInterlink
+    # This Task completion is depend on
+    parent_tasks: list["Tasks"] = Relationship(
+        back_populates="child_tasks", link_model=TaskInterlink, sa_relationship_kwargs={
+            "foreign_keys":"TaskInterlink.parent_task_id"
+        }
     )
-    follow_by: list["Tasks"] = Relationship(
-        back_populates="root_task", link_model=TaskInterlink
+
+    # This Task completion is the prerequisite of
+    child_tasks: list["Tasks"] = Relationship(
+        back_populates="parent_tasks", link_model=TaskInterlink,sa_relationship_kwargs={
+            "foreign_keys":"TaskInterlink.child_task_id"
+        }
     )
 
     project_id: int | None = Field(default=None, foreign_key="projects.id")
@@ -54,10 +60,3 @@ class Projects(SQLModel, table=True):
     warning: Warnings
     status: Status
 
-
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-engine = create_engine(sqlite_url, echo=True)
-
-SQLModel.metadata.create_all(engine)
