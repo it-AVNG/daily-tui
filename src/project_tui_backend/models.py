@@ -1,6 +1,7 @@
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 
 class Status(Enum):
@@ -17,10 +18,10 @@ class Warnings(Enum):
 
 
 class TaskInterlink(SQLModel, table=True):
-    parent_task_id: int | None = Field(
+    parent_task_id: Optional[int] | None = Field(
         default=None, foreign_key="tasks.id", primary_key=True
     )
-    child_task_id: int | None = Field(
+    child_task_id: Optional[int] | None = Field(
         default=None, foreign_key="tasks.id", primary_key=True
     )
 
@@ -37,14 +38,17 @@ class Tasks(SQLModel, table=True):
     # This Task completion is depend on
     parent_tasks: list["Tasks"] = Relationship(
         back_populates="child_tasks", link_model=TaskInterlink, sa_relationship_kwargs={
-            "foreign_keys":"TaskInterlink.parent_task_id"
+            # "foreign_keys":"TaskInterlink.parent_task_id"
+            "primaryjoin": "Tasks.id==TaskInterlink.child_task_id",
+            "secondaryjoin": "Tasks.id==TaskInterlink.parent_task_id",
         }
     )
 
     # This Task completion is the prerequisite of
     child_tasks: list["Tasks"] = Relationship(
         back_populates="parent_tasks", link_model=TaskInterlink,sa_relationship_kwargs={
-            "foreign_keys":"TaskInterlink.child_task_id"
+            "primaryjoin": "Tasks.id==TaskInterlink.parent_task_id",
+            "secondaryjoin": "Tasks.id==TaskInterlink.child_task_id",
         }
     )
 
