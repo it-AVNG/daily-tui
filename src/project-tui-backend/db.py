@@ -32,7 +32,7 @@ class Tasks(SQLModel, table=True):
     description: str
     start_time: datetime
     eta: float
-    warning: Warning
+    warning: Warnings
     status: Status
 
     root_task: list["Tasks"] = Relationship(
@@ -51,7 +51,7 @@ class Projects(SQLModel, table=True):
     description: str
     start_time: datetime
     end_time: datetime
-    warning: Warning
+    warning: Warnings
     status: Status
 
 
