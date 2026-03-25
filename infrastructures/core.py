@@ -1,12 +1,12 @@
 from sqlmodel import Session, select
 from datetime import datetime
-from project_tui_backend.models import (
+from repositories.models import (
     Projects,
     Tasks,
     Warnings,
     Status,
 )
-from project_tui_backend.db import create_db_and_table, engine
+from repositories.db import create_db_and_table, engine
 
 
 def create_projects() -> Projects:
